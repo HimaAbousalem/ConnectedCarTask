@@ -29,13 +29,9 @@ class LocationClass(context: Context, private var listener: LocationInteractor?)
         override fun onLocationResult(locationResult: LocationResult?) {
             super.onLocationResult(locationResult)
             val mLastLocation: Location? = locationResult?.lastLocation
-            Log.d("Location2", mLastLocation?.speed.toString())
-            Log.d("Location2", mLastLocation?.latitude.toString())
-            Log.d("Location2", mLastLocation?.longitude.toString())
             if(mLastLocation!= null && mLastLocation.speed >= 1){
                 val speed = mLastLocation.speed * 3.6f
                 calculateTime(speed.toInt())
-                Log.d("Location1", speed.toString())
                 listener?.sendCarCurrentSpeed(speed)
             }
         }
@@ -54,13 +50,9 @@ class LocationClass(context: Context, private var listener: LocationInteractor?)
                         if(!visited)
                             requestNewLocationData()
                     } else {
-                        Log.d("Location2", location.speed.toString())
-                        Log.d("Location2", location.latitude.toString())
-                        Log.d("Location2", location.longitude.toString())
                         if(location.speed >= 1.0){
                             val speed = location.speed * 3.6f
                             calculateTime(speed.toInt())
-                            Log.d("Location1", speed.toString())
                             listener?.sendCarCurrentSpeed(speed)
                         }
                     }
