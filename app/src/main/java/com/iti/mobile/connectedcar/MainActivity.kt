@@ -7,12 +7,14 @@ import android.util.Log
 import com.google.android.gms.maps.LocationSource
 import com.iti.mobile.connectedcar.location.LocationClass
 import com.iti.mobile.connectedcar.location.LocationPermissionHandler
+import kotlinx.android.synthetic.main.activity_main.*
+import kotlin.math.floor
 
 private const val TAG = "MainActivity"
 class MainActivity : AppCompatActivity(), LocationInteractor{
     private val PERMISSION_ID = 11
     private val locationPermission by lazy { LocationPermissionHandler(this)}
-    private val locationClass by lazy {LocationClass(this)}
+    private val locationClass by lazy {LocationClass(this, this)}
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,14 +54,18 @@ class MainActivity : AppCompatActivity(), LocationInteractor{
     }
 
     override fun sendCarCurrentSpeed(speed: Float) {
-
+        carSpeed.text = speed.toInt().toString()
     }
 
     override fun sendIncreaseTimeFrom10To30(increaseSpeedTime: Long) {
-        TODO("Not yet implemented")
+        val time = floor(increaseSpeedTime/1000.0).toLong()
+        Log.d("WTF", time.toString())
+        increaseTime.text = time.toString()
     }
 
     override fun sendDecreaseTimeFrom30To10(decreaseSpeedTime: Long) {
-        TODO("Not yet implemented")
+        val time = floor(decreaseSpeedTime/1000.0).toLong()
+        Log.d("WTF", time.toString())
+        decreaseTime.text = time.toString()
     }
 }

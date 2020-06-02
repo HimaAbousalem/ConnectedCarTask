@@ -10,11 +10,12 @@ import android.os.Looper
 import android.util.Log
 import android.widget.Toast
 import com.google.android.gms.location.*
+import com.iti.mobile.connectedcar.LocationInteractor
 import java.lang.ref.WeakReference
 import java.util.*
 
 
-class LocationClass(context: Context) {
+class LocationClass(context: Context, private var listener: LocationInteractor?) {
 
     private val mFusedLocationClient: FusedLocationProviderClient by lazy{ LocationServices.getFusedLocationProviderClient(context)}
     private val context: WeakReference<Context> by lazy{ WeakReference(context)}
@@ -28,8 +29,14 @@ class LocationClass(context: Context) {
         override fun onLocationResult(locationResult: LocationResult?) {
             super.onLocationResult(locationResult)
             val mLastLocation: Location? = locationResult?.lastLocation
+            Log.d("Location2", mLastLocation?.speed.toString())
+            Log.d("Location2", mLastLocation?.latitude.toString())
+            Log.d("Location2", mLastLocation?.longitude.toString())
             if(mLastLocation!= null && mLastLocation.speed >= 1){
-                calculateTime(mLastLocation.speed)
+                val speed = mLastLocation.speed * 3.6f
+                calculateTime(speed.toInt())
+                Log.d("Location1", speed.toString())
+                listener?.sendCarCurrentSpeed(speed)
             }
         }
     }
@@ -47,8 +54,14 @@ class LocationClass(context: Context) {
                         if(!visited)
                             requestNewLocationData()
                     } else {
+                        Log.d("Location2", location.speed.toString())
+                        Log.d("Location2", location.latitude.toString())
+                        Log.d("Location2", location.longitude.toString())
                         if(location.speed >= 1.0){
-                            calculateTime(location.speed)
+                            val speed = location.speed * 3.6f
+                            calculateTime(speed.toInt())
+                            Log.d("Location1", speed.toString())
+                            listener?.sendCarCurrentSpeed(speed)
                         }
                     }
                 }
@@ -65,7 +78,7 @@ class LocationClass(context: Context) {
     private fun requestNewLocationData() {
         val mLocationRequest = LocationRequest.create()
         mLocationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-        mLocationRequest.interval = 2000
+        mLocationRequest.interval = 0
         mFusedLocationClient.requestLocationUpdates(
             mLocationRequest, mLocationCallback,
             Looper.getMainLooper()
@@ -83,23 +96,28 @@ class LocationClass(context: Context) {
 
     fun cancelLocationUpdate(){
         mFusedLocationClient.removeLocationUpdates(mLocationCallback)
+        listener = null
     }
 
-    fun calculateTime(speed: Float){
-        if((10.0f - speed) in 0.0..1.0){
+    fun calculateTime(speed: Int){
+        if(speed == 10){
             //1
             increaseSpeedStartTime = System.currentTimeMillis()
             //2
             decreaseSpeedEndTime = System.currentTimeMillis()
-            val decreaseTime = decreaseSpeedEndTime - decreaseSpeedStartTime
-            //TODO: send to mainActivity
-            //..
-        }else if ((30.0f - speed) in 0.0..1.0){
+            if(decreaseSpeedStartTime != 0L) {
+                val decreaseTime = decreaseSpeedEndTime - decreaseSpeedStartTime
+                listener?.sendDecreaseTimeFrom30To10(decreaseTime)
+                decreaseSpeedStartTime = 0L
+            }
+        }else if (speed == 30){
             //1
-            increaseSpeedEndTime = System.currentTimeMillis()
-            val increaseTime = increaseSpeedEndTime - increaseSpeedStartTime
-            // TODO: send to mainActivity.
-            //..
+            if(increaseSpeedStartTime != 0L) {
+                increaseSpeedEndTime = System.currentTimeMillis()
+                val increaseTime = increaseSpeedEndTime - increaseSpeedStartTime
+                listener?.sendIncreaseTimeFrom10To30(increaseTime)
+                increaseSpeedStartTime = 0L
+            }
             //2
             decreaseSpeedStartTime = System.currentTimeMillis()
         }
