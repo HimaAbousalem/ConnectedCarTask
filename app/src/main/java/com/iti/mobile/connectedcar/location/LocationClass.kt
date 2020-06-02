@@ -78,7 +78,7 @@ class LocationClass(context: Context, private var listener: LocationInteractor?)
     private fun requestNewLocationData() {
         val mLocationRequest = LocationRequest.create()
         mLocationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-        mLocationRequest.interval = 0
+        mLocationRequest.interval = 1000
         mFusedLocationClient.requestLocationUpdates(
             mLocationRequest, mLocationCallback,
             Looper.getMainLooper()
